@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Streamer Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome Streamer</h1>
+    <div id="links"></div>
+    <ul id="tipList"></ul>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
+  <script src="firebaseConfig.js"></script>
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        document.getElementById("links").innerHTML = `
+          <p>Tip Link: <code>https://your-site.vercel.app/tip.html?u=${uid}</code></p>
+          <p>Alert Link (for OBS): <code>https://your-site.vercel.app/alert.html?u=${uid}</code></p>
+        `;
+
+        db.ref("tips").orderByChild("streamer").equalTo(uid).on("child_added", snap => {
+          const { name, message, amount } = snap.val();
+          const li = document.createElement("li");
+          li.textContent = `₹${amount} from ${name}: ${message}`;
+          document.getElementById("tipList").appendChild(li);
+        });
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>
